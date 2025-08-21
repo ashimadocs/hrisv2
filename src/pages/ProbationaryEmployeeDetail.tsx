@@ -51,6 +51,7 @@ import {
   Description as DescriptionIcon,
   Assignment as AssignmentIcon,
   Star as StarIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 
 interface TabPanelProps {
@@ -834,7 +835,16 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                   <Grid item xs={12} md={6}>
                     <Card>
                       <CardContent>
-                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Regularized (Editable)</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                          <Typography variant="h6" color="text.secondary">Regularized (Editable)</Typography>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => setIsEditing(!isEditing)}
+                            sx={{ color: 'primary.main' }}
+                          >
+                            <SettingsIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
                         {isEditing ? (
                           <TextField
                             fullWidth
@@ -852,12 +862,12 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                             }))}
                             sx={{ mb: 2 }}
                             InputProps={{
-                              startAdornment: <Typography variant="h6" sx={{ mr: 1 }}>$</Typography>
+                              startAdornment: <Typography variant="h6" sx={{ mr: 1 }}>₱</Typography>
                             }}
                           />
                         ) : (
                           <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
-                            ${employeeData.compensationChanges.regularized.salary.toLocaleString()}
+                            ₱{employeeData.compensationChanges.regularized.salary.toLocaleString()}
                           </Typography>
                         )}
                         <Typography variant="body2" color="text.secondary">
@@ -876,7 +886,7 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                   <Grid container spacing={2} sx={{ textAlign: 'center' }}>
                     <Grid item xs={12} md={4}>
                       <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                        ${employeeData.compensationChanges.regularized.salary - employeeData.compensationChanges.probationary.salary}
+                        ₱{employeeData.compensationChanges.regularized.salary - employeeData.compensationChanges.probationary.salary}
                       </Typography>
                       <Typography variant="body2">Annual Increase</Typography>
                     </Grid>
@@ -888,7 +898,7 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                     </Grid>
                     <Grid item xs={12} md={4}>
                       <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                        ${Math.round((employeeData.compensationChanges.regularized.salary - employeeData.compensationChanges.probationary.salary) / 12)}
+                        ₱{Math.round((employeeData.compensationChanges.regularized.salary - employeeData.compensationChanges.probationary.salary) / 12)}
                       </Typography>
                       <Typography variant="body2">Monthly Increase</Typography>
                     </Grid>
@@ -1043,7 +1053,18 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                     </TableHead>
                     <TableBody>
                       <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Annual Leave</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            Annual Leave
+                            <IconButton 
+                              size="small" 
+                              onClick={() => setIsEditing(!isEditing)}
+                              sx={{ color: 'primary.main' }}
+                            >
+                              <SettingsIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </TableCell>
                         <TableCell>{new Date(employeeData.startDate).toLocaleDateString()}</TableCell>
                         <TableCell>
                           {isEditing ? (
