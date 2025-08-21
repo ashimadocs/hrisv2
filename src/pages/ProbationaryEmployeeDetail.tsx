@@ -6,7 +6,6 @@ import {
   Paper,
   Tabs,
   Tab,
-  TextField,
   Button,
   Chip,
   Grid,
@@ -25,6 +24,15 @@ import {
   Step,
   StepLabel,
   StepContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -34,12 +42,68 @@ import {
   Cancel as CancelIcon,
   CheckCircle as CheckCircleIcon,
   RadioButtonUnchecked as RadioButtonUncheckedIcon,
+  ExpandMore as ExpandMoreIcon,
+  Work as WorkIcon,
+  AttachMoney as AttachMoneyIcon,
+  CardGiftcard as CardGiftcardIcon,
+  EventNote as EventNoteIcon,
+  Description as DescriptionIcon,
+  Assignment as AssignmentIcon,
+  Star as StarIcon,
 } from '@mui/icons-material';
 
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
+}
+
+interface AssessmentGoal {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  target: string;
+  weight: number;
+  status: 'pending' | 'in-progress' | 'completed' | 'exceeded';
+  score?: number;
+  maxScore: number;
+}
+
+interface PerformanceReview {
+  id: string;
+  type: string;
+  date: string;
+  overallScore: number;
+  maxScore: number;
+  status: 'pending' | 'completed' | 'approved';
+  evaluator: string;
+  comments: string;
+  recommendation: 'extend' | 'regularize' | 'terminate';
+}
+
+interface CompensationChange {
+  probationary: {
+    salary: number;
+    allowances: string[];
+    bonuses: string[];
+    leaves: number;
+  };
+  regularized: {
+    salary: number;
+    allowances: string[];
+    bonuses: string[];
+    leaves: number;
+  };
+  effectiveDate: string;
+  status: 'pending' | 'approved' | 'implemented';
+}
+
+interface DocumentStatus {
+  name: string;
+  status: 'pending' | 'signed' | 'acknowledged';
+  dueDate: string;
+  lastUpdated: string;
 }
 
 interface ProbationaryEmployee {
@@ -65,6 +129,10 @@ interface ProbationaryEmployee {
   evaluationNotes?: string;
   extensionRequested?: boolean;
   extensionReason?: string;
+  assessmentGoals: AssessmentGoal[];
+  performanceReviews: PerformanceReview[];
+  compensationChanges: CompensationChange;
+  documents: DocumentStatus[];
 }
 
 const ProbationaryEmployeeDetail: React.FC = () => {
@@ -139,7 +207,119 @@ const ProbationaryEmployeeDetail: React.FC = () => {
       ],
       performanceRating: 4.2,
       evaluationNotes: 'Strong technical skills, good team collaboration, meets expectations.',
-      extensionRequested: false
+      extensionRequested: false,
+      assessmentGoals: [
+        {
+          id: 'g1',
+          title: 'Technical Skills Development',
+          description: 'Master core programming languages and frameworks',
+          category: 'Technical',
+          target: 'Complete 3 certification courses',
+          weight: 30,
+          status: 'completed',
+          score: 85,
+          maxScore: 100
+        },
+        {
+          id: 'g2',
+          title: 'Project Delivery',
+          description: 'Successfully deliver assigned project milestones',
+          category: 'Delivery',
+          target: 'Complete 2 major features',
+          weight: 40,
+          status: 'completed',
+          score: 90,
+          maxScore: 100
+        },
+        {
+          id: 'g3',
+          title: 'Team Collaboration',
+          description: 'Effectively work with cross-functional teams',
+          category: 'Soft Skills',
+          target: 'Participate in 5 team meetings',
+          weight: 20,
+          status: 'completed',
+          score: 88,
+          maxScore: 100
+        },
+        {
+          id: 'g4',
+          title: 'Learning & Growth',
+          description: 'Demonstrate continuous learning and improvement',
+          category: 'Growth',
+          target: 'Complete 1 advanced training',
+          weight: 10,
+          status: 'in-progress',
+          score: 60,
+          maxScore: 100
+        }
+      ],
+      performanceReviews: [
+        {
+          id: 'pr1',
+          type: 'Mid-Probation Review',
+          date: '2023-12-01',
+          overallScore: 4.2,
+          maxScore: 5.0,
+          status: 'completed',
+          evaluator: 'Sarah Johnson',
+          comments: 'Excellent progress, strong technical foundation, good team player.',
+          recommendation: 'regularize'
+        },
+        {
+          id: 'pr2',
+          type: 'Final Probation Review',
+          date: '2024-01-05',
+          overallScore: 4.5,
+          maxScore: 5.0,
+          status: 'completed',
+          evaluator: 'Sarah Johnson',
+          comments: 'Outstanding performance, ready for regularization.',
+          recommendation: 'regularize'
+        }
+      ],
+      compensationChanges: {
+        probationary: {
+          salary: 45000,
+          allowances: ['Training Allowance'],
+          bonuses: [],
+          leaves: 10
+        },
+        regularized: {
+          salary: 55000,
+          allowances: ['Mobile Allowance', 'Transportation Allowance'],
+          bonuses: ['Sign-in Bonus', 'Attendance Bonus'],
+          leaves: 20
+        },
+        effectiveDate: '2024-01-16',
+        status: 'pending'
+      },
+      documents: [
+        {
+          name: 'Regularization Notice',
+          status: 'signed',
+          dueDate: '2024-01-08',
+          lastUpdated: '2024-01-08'
+        },
+        {
+          name: 'Updated Contract',
+          status: 'pending',
+          dueDate: '2024-01-12',
+          lastUpdated: '2024-01-10'
+        },
+        {
+          name: 'Company Policy and Handbook',
+          status: 'pending',
+          dueDate: '2024-01-15',
+          lastUpdated: '2024-01-10'
+        },
+        {
+          name: 'Agreements (NDA/Non-Compete)',
+          status: 'pending',
+          dueDate: '2024-01-15',
+          lastUpdated: '2024-01-10'
+        }
+      ]
     };
     setEmployeeData(mockEmployee);
   }, [employeeId]);
@@ -178,6 +358,18 @@ const ProbationaryEmployeeDetail: React.FC = () => {
     if (!employeeData) return 0;
     const completed = employeeData.checklistItems.filter(item => item.completed).length;
     return Math.min(completed, employeeData.checklistItems.length - 1);
+  };
+
+  const getGoalsCompletion = () => {
+    if (!employeeData) return 0;
+    const completed = employeeData.assessmentGoals.filter(goal => goal.status === 'completed').length;
+    return Math.round((completed / employeeData.assessmentGoals.length) * 100);
+  };
+
+  const getAverageReviewScore = () => {
+    if (!employeeData || employeeData.performanceReviews.length === 0) return 0;
+    const totalScore = employeeData.performanceReviews.reduce((sum, review) => sum + review.overallScore, 0);
+    return Math.round((totalScore / employeeData.performanceReviews.length) * 10) / 10;
   };
 
   function TabPanel(props: TabPanelProps) {
@@ -282,8 +474,9 @@ const ProbationaryEmployeeDetail: React.FC = () => {
           sx={{ borderBottom: 1, borderColor: 'divider' }}
         >
           <Tab label="Dashboard" />
-          <Tab label="Profile" />
-          <Tab label="Job" />
+          <Tab label="Goals" />
+          <Tab label="Reviews" />
+          <Tab label="Compensation" />
           <Tab label="Documents" />
           <Tab label="Assets" />
           <Tab label="Checklist" />
@@ -293,12 +486,12 @@ const ProbationaryEmployeeDetail: React.FC = () => {
         <TabPanel value={tabValue} index={0}>
           <Box sx={{ p: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'primary.main' }}>
-              Regularization Progress Dashboard
+              Probationary Employee Dashboard
             </Typography>
 
-            {/* Progress Overview */}
+            {/* Summary Cards */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={3}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <Typography variant="h3" color="primary" sx={{ fontWeight: 'bold' }}>
@@ -310,31 +503,129 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={3}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <Typography variant="h3" color="success.main" sx={{ fontWeight: 'bold' }}>
-                      {employeeData.checklistItems.filter(item => item.completed).length}
+                      {getGoalsCompletion()}%
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
-                      Items Completed
+                      Goals Achieved
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={3}>
+                <Card>
+                  <CardContent sx={{ textAlign: 'center' }}>
+                    <Typography variant="h3" color="info.main" sx={{ fontWeight: 'bold' }}>
+                      {getAverageReviewScore()}
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                      Avg Review Score
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={3}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <Typography variant="h3" color="warning.main" sx={{ fontWeight: 'bold' }}>
-                      {employeeData.checklistItems.filter(item => !item.completed).length}
+                      {employeeData.performanceReviews.length}
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
-                      Items Remaining
+                      Reviews Completed
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
             </Grid>
+
+            {/* Quick Status Overview */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <AssignmentIcon color="primary" />
+                      Regularization Checklist Status
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        Progress: {getCompletionPercentage()}% ({employeeData.checklistItems.filter(item => item.completed).length}/{employeeData.checklistItems.length} items)
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={getCompletionPercentage()}
+                        sx={{ height: 8, borderRadius: 4 }}
+                      />
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Next due: {employeeData.checklistItems.find(item => !item.completed)?.dueDate ? 
+                        new Date(employeeData.checklistItems.find(item => !item.completed)!.dueDate!).toLocaleDateString() : 'All completed'}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <StarIcon color="primary" />
+                      Performance Review Results
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        Latest Score: {employeeData.performanceReviews[employeeData.performanceReviews.length - 1]?.overallScore || 'N/A'}/5.0
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        Recommendation: {employeeData.performanceReviews[employeeData.performanceReviews.length - 1]?.recommendation || 'N/A'}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Status: {employeeData.performanceReviews[employeeData.performanceReviews.length - 1]?.status || 'N/A'}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* Job Changes Summary */}
+            <Card sx={{ mb: 4 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <WorkIcon color="primary" />
+                  Job Changes Summary
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="text.secondary">Salary Change</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                      ${employeeData.compensationChanges.probationary.salary.toLocaleString()} → ${employeeData.compensationChanges.regularized.salary.toLocaleString()}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="text.secondary">Effective Date</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                      {new Date(employeeData.compensationChanges.effectiveDate).toLocaleDateString()}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="text.secondary">New Allowances</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                      {employeeData.compensationChanges.regularized.allowances.join(', ')}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="text.secondary">New Bonuses</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                      {employeeData.compensationChanges.regularized.bonuses.join(', ')}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
 
             {/* Regularization Steps Visual */}
             <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
@@ -376,125 +667,354 @@ const ProbationaryEmployeeDetail: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Profile Tab */}
+        {/* Goals Tab */}
         <TabPanel value={tabValue} index={1}>
           <Box sx={{ p: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'primary.main' }}>
-              Employee Profile
+              Assessment Goals
             </Typography>
             
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Performance goals used for probationary evaluation and regularization decision.
+            </Typography>
+
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Full Name"
-                  value={employeeData.name}
-                  disabled={!isEditing}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Position"
-                  value={employeeData.position}
-                  disabled={!isEditing}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Department"
-                  value={employeeData.department}
-                  disabled={!isEditing}
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Manager"
-                  value={employeeData.manager}
-                  disabled={!isEditing}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Probation Period"
-                  value={employeeData.probationPeriod}
-                  disabled={!isEditing}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Current Stage"
-                  value={employeeData.currentStage}
-                  disabled={!isEditing}
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
+              {employeeData.assessmentGoals.map((goal) => (
+                <Grid item xs={12} md={6} key={goal.id}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                          {goal.title}
+                        </Typography>
+                        <Chip 
+                          label={goal.status.replace('-', ' ')} 
+                          color={goal.status === 'completed' ? 'success' : goal.status === 'in-progress' ? 'warning' : 'default'}
+                          size="small"
+                        />
+                      </Box>
+                      
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        {goal.description}
+                      </Typography>
+                      
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="caption" color="text.secondary">Target:</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{goal.target}</Typography>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          Weight: {goal.weight}%
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Category: {goal.category}
+                        </Typography>
+                      </Box>
+                      
+                      {goal.score !== undefined && (
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" color="text.secondary">Score:</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                            {goal.score}/{goal.maxScore} ({Math.round((goal.score / goal.maxScore) * 100)}%)
+                          </Typography>
+                          <LinearProgress
+                            variant="determinate"
+                            value={(goal.score / goal.maxScore) * 100}
+                            sx={{ height: 6, borderRadius: 3, mt: 1 }}
+                          />
+                        </Box>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
             </Grid>
           </Box>
         </TabPanel>
 
-        {/* Job Tab */}
+        {/* Reviews Tab */}
         <TabPanel value={tabValue} index={2}>
           <Box sx={{ p: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'primary.main' }}>
-              Job Information
+              Performance Reviews
             </Typography>
             
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Performance evaluation results determining probationary to regularized status transition.
+            </Typography>
+
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Start Date"
-                  value={new Date(employeeData.startDate).toLocaleDateString()}
-                  disabled
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="End Date"
-                  value={new Date(employeeData.endDate).toLocaleDateString()}
-                  disabled
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Due Date"
-                  value={new Date(employeeData.dueDate).toLocaleDateString()}
-                  disabled
-                  sx={{ mb: 2 }}
-                />
-                {employeeData.performanceRating && (
-                  <TextField
-                    fullWidth
-                    label="Performance Rating"
-                    value={`${employeeData.performanceRating}/5.0`}
-                    disabled
-                    sx={{ mb: 2 }}
-                  />
-                )}
-              </Grid>
+              {employeeData.performanceReviews.map((review) => (
+                <Grid item xs={12} key={review.id}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                            {review.type}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Date: {new Date(review.date).toLocaleDateString()}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Chip 
+                            label={review.status} 
+                            color={review.status === 'completed' ? 'success' : 'warning'}
+                            size="small"
+                            sx={{ mb: 1 }}
+                          />
+                          <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold' }}>
+                            {review.overallScore}/{review.maxScore}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          <strong>Evaluator:</strong> {review.evaluator}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          <strong>Comments:</strong> {review.comments}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          <strong>Recommendation:</strong> 
+                          <Chip 
+                            label={review.recommendation} 
+                            color={review.recommendation === 'regularize' ? 'success' : review.recommendation === 'extend' ? 'warning' : 'error'}
+                            size="small"
+                            sx={{ ml: 1 }}
+                          />
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
             </Grid>
+          </Box>
+        </TabPanel>
+
+        {/* Compensation Tab */}
+        <TabPanel value={tabValue} index={3}>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'primary.main' }}>
+              Compensation & Benefits
+            </Typography>
+            
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Detailed comparison of probationary vs. regularized compensation and benefits.
+            </Typography>
+
+            {/* Salary Section */}
+            <Accordion defaultExpanded>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <AttachMoneyIcon color="primary" />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Salary</Typography>
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Probationary</Typography>
+                        <Typography variant="h4" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                          ${employeeData.compensationChanges.probationary.salary.toLocaleString()}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Annual salary during probation period
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Regularized</Typography>
+                        <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
+                          ${employeeData.compensationChanges.regularized.salary.toLocaleString()}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Annual salary after regularization
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+                <Box sx={{ mt: 2, p: 2, backgroundColor: 'background.paper', borderRadius: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Effective Date:</strong> {new Date(employeeData.compensationChanges.effectiveDate).toLocaleDateString()}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Status:</strong> 
+                    <Chip 
+                      label={employeeData.compensationChanges.status} 
+                      color={employeeData.compensationChanges.status === 'approved' ? 'success' : 'warning'}
+                      size="small"
+                      sx={{ ml: 1 }}
+                    />
+                  </Typography>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+
+            {/* Benefits Section */}
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <CardGiftcardIcon color="primary" />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Benefits</Typography>
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={3}>
+                  {/* Allowances */}
+                  <Grid item xs={12} md={6}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Allowances</Typography>
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="subtitle2" color="text.secondary">Probationary:</Typography>
+                          <Typography variant="body2">
+                            {employeeData.compensationChanges.probationary.allowances.length > 0 ? 
+                              employeeData.compensationChanges.probationary.allowances.join(', ') : 'None'}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="subtitle2" color="text.secondary">Regularized:</Typography>
+                          <Typography variant="body2">
+                            {employeeData.compensationChanges.regularized.allowances.join(', ')}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  
+                  {/* Bonuses */}
+                  <Grid item xs={12} md={6}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Bonuses</Typography>
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="subtitle2" color="text.secondary">Probationary:</Typography>
+                          <Typography variant="body2">
+                            {employeeData.compensationChanges.probationary.bonuses.length > 0 ? 
+                              employeeData.compensationChanges.probationary.bonuses.join(', ') : 'None'}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="subtitle2" color="text.secondary">Regularized:</Typography>
+                          <Typography variant="body2">
+                            {employeeData.compensationChanges.regularized.bonuses.join(', ')}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+
+            {/* Leaves Section */}
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <EventNoteIcon color="primary" />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Leaves</Typography>
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Probationary</Typography>
+                        <Typography variant="h4" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                          {employeeData.compensationChanges.probationary.leaves} days
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Annual leave entitlement
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Regularized</Typography>
+                        <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
+                          {employeeData.compensationChanges.regularized.leaves} days
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Annual leave entitlement
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
           </Box>
         </TabPanel>
 
         {/* Documents Tab */}
-        <TabPanel value={tabValue} index={3}>
+        <TabPanel value={tabValue} index={4}>
           <Box sx={{ p: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'primary.main' }}>
               Documents
             </Typography>
             
-            <Typography variant="body1" color="text.secondary">
-              Document management for probationary employees will be implemented here.
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Track the status of required documents for regularization.
             </Typography>
+
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Document</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Due Date</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Last Updated</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {employeeData.documents.map((doc) => (
+                    <TableRow key={doc.name}>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <DescriptionIcon color="action" />
+                          {doc.name}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={doc.status} 
+                          color={doc.status === 'signed' ? 'success' : doc.status === 'acknowledged' ? 'info' : 'warning'}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>{new Date(doc.dueDate).toLocaleDateString()}</TableCell>
+                      <TableCell>{new Date(doc.lastUpdated).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Button variant="outlined" size="small">
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </Box>
         </TabPanel>
 
         {/* Assets Tab */}
-        <TabPanel value={tabValue} index={4}>
+        <TabPanel value={tabValue} index={5}>
           <Box sx={{ p: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'primary.main' }}>
               Assets
@@ -507,7 +1027,7 @@ const ProbationaryEmployeeDetail: React.FC = () => {
         </TabPanel>
 
         {/* Checklist Tab */}
-        <TabPanel value={tabValue} index={5}>
+        <TabPanel value={tabValue} index={6}>
           <Box sx={{ p: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'primary.main' }}>
               Regularization Checklist
@@ -516,6 +1036,21 @@ const ProbationaryEmployeeDetail: React.FC = () => {
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
               Track progress through the regularization process. All items must be completed for successful regularization.
             </Typography>
+
+            {/* Progress Summary */}
+            <Box sx={{ mb: 4, p: 3, backgroundColor: 'background.paper', borderRadius: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                Overall Progress: {getCompletionPercentage()}%
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={getCompletionPercentage()}
+                sx={{ height: 12, borderRadius: 6, mb: 2 }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                {employeeData.checklistItems.filter(item => item.completed).length} of {employeeData.checklistItems.length} items completed
+              </Typography>
+            </Box>
 
             <List>
               {employeeData.checklistItems.map((item) => (
@@ -567,18 +1102,6 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                 </ListItem>
               ))}
             </List>
-
-            {/* Overall Progress */}
-            <Box sx={{ mt: 3, p: 2, backgroundColor: 'background.paper', borderRadius: 1 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Overall Progress: {getCompletionPercentage()}%
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={getCompletionPercentage()}
-                sx={{ height: 8, borderRadius: 4 }}
-              />
-            </Box>
           </Box>
         </TabPanel>
       </Paper>
