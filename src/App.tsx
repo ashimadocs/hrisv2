@@ -12,6 +12,14 @@ import AutomatedCommunications from './pages/AutomatedCommunications';
 import ReportingAnalytics from './pages/ReportingAnalytics';
 import Screening from './pages/Screening';
 import AutoPilotWorkflows from './pages/AutoPilotWorkflows';
+// PERFORM module imports
+import EvaluationPipeline from './pages/EvaluationPipeline';
+import Goals from './pages/Goals';
+import Competencies from './pages/Competencies';
+import Compensation from './pages/Compensation';
+import Feedback from './pages/Feedback';
+import Reviews from './pages/Reviews';
+import Engagement from './pages/Engagement';
 
 function App() {
   return (
@@ -29,6 +37,14 @@ function App() {
             <Route path="/auto-pilot-workflows" element={<AutoPilotWorkflows />} />
             <Route path="/reporting-analytics" element={<ReportingAnalytics />} />
             <Route path="/screening" element={<Screening />} />
+            {/* PERFORM module routes */}
+            <Route path="/evaluation-pipeline" element={<EvaluationPipeline />} />
+            <Route path="/goals" element={<Goals />} />
+            <Route path="/competencies" element={<Competencies />} />
+            <Route path="/compensation" element={<Compensation />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="/reviews" element={<Reviews />} />
+            <Route path="/engagement" element={<Engagement />} />
           </Routes>
         </Box>
       </Container>
