@@ -74,15 +74,35 @@ interface PerformanceReview {
   createdBy: string;
 }
 
+interface ProbationaryReview {
+  id: string;
+  name: string;
+  status: 'Active' | 'Completed' | 'Draft' | 'Archived';
+  period: string;
+  totalEmployees: number;
+  completedReviews: number;
+  progress: number;
+  regularizationImpact: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  createdBy: string;
+}
+
 const Reviews: React.FC = () => {
   const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createProbationaryDialogOpen, setCreateProbationaryDialogOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [probationaryPage, setProbationaryPage] = useState(0);
+  const [probationaryRowsPerPage, setProbationaryRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
+  const [probationarySearchTerm, setProbationarySearchTerm] = useState('');
+  const [probationaryStatusFilter, setProbationaryStatusFilter] = useState('All');
 
   // Form state for new review creation
   const [formData, setFormData] = useState({
@@ -114,7 +134,28 @@ const Reviews: React.FC = () => {
     weightedScoring: false,
   });
 
+  // Form state for new probationary review creation
+  const [probationaryFormData, setProbationaryFormData] = useState({
+    reviewName: '',
+    startDate: '',
+    endDate: '',
+    period: '3 months',
+    notifications: true,
+    includeEmployees: [],
+    evaluators: [],
+    regularizationCriteria: '',
+    extensionPolicy: '',
+    terminationPolicy: '',
+    description: '',
+    autoReminders: true,
+    escalationDays: 7,
+    requireManagerApproval: true,
+    includeCompetencies: true,
+    ratingScale: '5-point',
+  });
+
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [probationaryFormErrors, setProbationaryFormErrors] = useState<Record<string, string>>({});
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -122,6 +163,10 @@ const Reviews: React.FC = () => {
 
   const handleReviewClick = (reviewId: string) => {
     navigate(`/review-detail/${reviewId}`);
+  };
+
+  const handleProbationaryReviewClick = (reviewId: string) => {
+    navigate(`/probationary-review-detail/${reviewId}`);
   };
 
   // Form handlers
@@ -134,6 +179,21 @@ const Reviews: React.FC = () => {
     // Clear error when user starts typing
     if (formErrors[field]) {
       setFormErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
+
+  const handleProbationaryFormChange = (field: string, value: any) => {
+    setProbationaryFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear error when user starts typing
+    if (probationaryFormErrors[field]) {
+      setProbationaryFormErrors(prev => ({
         ...prev,
         [field]: ''
       }));
@@ -194,6 +254,42 @@ const Reviews: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const validateProbationaryForm = () => {
+    const errors: Record<string, string> = {};
+
+    // Required field validations
+    if (!probationaryFormData.reviewName.trim()) {
+      errors.reviewName = 'Review name is required';
+    }
+    if (!probationaryFormData.startDate) {
+      errors.startDate = 'Start date is required';
+    }
+    if (!probationaryFormData.endDate) {
+      errors.endDate = 'End date is required';
+    }
+    if (!probationaryFormData.period) {
+      errors.period = 'Probation period is required';
+    }
+    if (probationaryFormData.evaluators.length === 0) {
+      errors.evaluators = 'At least one evaluator type must be selected';
+    }
+    if (probationaryFormData.includeEmployees.length === 0) {
+      errors.includeEmployees = 'Employee selection is required';
+    }
+
+    // Date validation
+    if (probationaryFormData.startDate && probationaryFormData.endDate) {
+      const startDate = new Date(probationaryFormData.startDate);
+      const endDate = new Date(probationaryFormData.endDate);
+      if (startDate >= endDate) {
+        errors.endDate = 'End date must be after start date';
+      }
+    }
+
+    setProbationaryFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleCreateReview = () => {
     if (!validateForm()) {
       return;
@@ -236,6 +332,38 @@ const Reviews: React.FC = () => {
     alert('Performance review created successfully!');
   };
 
+  const handleCreateProbationaryReview = () => {
+    if (!validateProbationaryForm()) {
+      return;
+    }
+
+    // Create new probationary review object
+    const newProbationaryReview: ProbationaryReview = {
+      id: `PR-${String(probationaryReviews.length + 1).padStart(3, '0')}`,
+      name: probationaryFormData.reviewName,
+      status: 'Draft',
+      period: probationaryFormData.period,
+      totalEmployees: 0, // Would be calculated based on employee selection
+      completedReviews: 0,
+      progress: 0,
+      regularizationImpact: 'Pending',
+      startDate: probationaryFormData.startDate,
+      endDate: probationaryFormData.endDate,
+      createdAt: new Date().toISOString(),
+      createdBy: 'Current User' // Would be actual user
+    };
+
+    // Here you would typically send the data to your backend API
+    console.log('Creating new probationary review:', newProbationaryReview);
+    
+    // Reset form and close dialog
+    resetProbationaryForm();
+    setCreateProbationaryDialogOpen(false);
+    
+    // Show success message
+    alert('Probationary review created successfully!');
+  };
+
   const resetForm = () => {
     setFormData({
       reviewName: '',
@@ -266,6 +394,28 @@ const Reviews: React.FC = () => {
       weightedScoring: false,
     });
     setFormErrors({});
+  };
+
+  const resetProbationaryForm = () => {
+    setProbationaryFormData({
+      reviewName: '',
+      startDate: '',
+      endDate: '',
+      period: '3 months',
+      notifications: true,
+      includeEmployees: [],
+      evaluators: [],
+      regularizationCriteria: '',
+      extensionPolicy: '',
+      terminationPolicy: '',
+      description: '',
+      autoReminders: true,
+      escalationDays: 7,
+      requireManagerApproval: true,
+      includeCompetencies: true,
+      ratingScale: '5-point',
+    });
+    setProbationaryFormErrors({});
   };
 
   const handleDialogClose = () => {
@@ -353,6 +503,52 @@ const Reviews: React.FC = () => {
     }
   ];
 
+  // Sample data for Probationary Reviews
+  const probationaryReviews: ProbationaryReview[] = [
+    {
+      id: 'PR-001',
+      name: 'Q4 2024 Probationary Review',
+      status: 'Active',
+      period: '3 months',
+      totalEmployees: 8,
+      completedReviews: 5,
+      progress: 62.5,
+      regularizationImpact: '2 Ready for Regularization',
+      startDate: '2024-10-01',
+      endDate: '2025-01-01',
+      createdAt: '2024-09-15',
+      createdBy: 'HR Manager'
+    },
+    {
+      id: 'PR-002',
+      name: 'Q3 2024 Probationary Assessment',
+      status: 'Completed',
+      period: '3 months',
+      totalEmployees: 6,
+      completedReviews: 6,
+      progress: 100,
+      regularizationImpact: '4 Regularized, 2 Extended',
+      startDate: '2024-07-01',
+      endDate: '2024-10-01',
+      createdAt: '2024-06-15',
+      createdBy: 'HR Manager'
+    },
+    {
+      id: 'PR-003',
+      name: 'Q2 2024 Probationary Review',
+      status: 'Completed',
+      period: '6 months',
+      totalEmployees: 4,
+      completedReviews: 4,
+      progress: 100,
+      regularizationImpact: '3 Regularized, 1 Terminated',
+      startDate: '2024-04-01',
+      endDate: '2024-10-01',
+      createdAt: '2024-03-15',
+      createdBy: 'HR Director'
+    }
+  ];
+
   // Dashboard statistics
   const dashboardStats = {
     totalReviews: performanceReviews.length,
@@ -362,6 +558,17 @@ const Reviews: React.FC = () => {
     completedEmployees: performanceReviews.reduce((acc, r) => acc + r.completedReviews, 0),
     avgRating: performanceReviews.length > 0 ? 
       (performanceReviews.reduce((acc, r) => acc + r.avgRating, 0) / performanceReviews.length).toFixed(1) : '0.0'
+  };
+
+  // Dashboard statistics for Probationary Reviews
+  const probationaryDashboardStats = {
+    totalReviews: probationaryReviews.length,
+    activeReviews: probationaryReviews.filter(r => r.status === 'Active').length,
+    completedReviews: probationaryReviews.filter(r => r.status === 'Completed').length,
+    totalEmployees: probationaryReviews.reduce((acc, r) => acc + r.totalEmployees, 0),
+    completedEmployees: probationaryReviews.reduce((acc, r) => acc + r.completedReviews, 0),
+    avgProgress: probationaryReviews.length > 0 ? 
+      (probationaryReviews.reduce((acc, r) => acc + r.progress, 0) / probationaryReviews.length).toFixed(1) : '0.0'
   };
 
   // Filtered reviews for table
@@ -377,6 +584,20 @@ const Reviews: React.FC = () => {
   const paginatedReviews = filteredReviews.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
+  );
+
+  // Filtered probationary reviews for table
+  const filteredProbationaryReviews = probationaryReviews.filter(review => {
+    const matchesSearch = review.name.toLowerCase().includes(probationarySearchTerm.toLowerCase()) ||
+                         review.id.toLowerCase().includes(probationarySearchTerm.toLowerCase());
+    const matchesStatus = probationaryStatusFilter === 'All' || review.status === probationaryStatusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const paginatedProbationaryReviews = filteredProbationaryReviews.slice(
+    probationaryPage * probationaryRowsPerPage,
+    probationaryPage * probationaryRowsPerPage + probationaryRowsPerPage
   );
 
   const getStatusColor = (status: string) => {
@@ -740,30 +961,244 @@ const Reviews: React.FC = () => {
               Manage probationary period assessments and regularization processes
             </Typography>
             
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  Coming Soon
+            {/* Dashboard Section for Probationary Reviews */}
+            <Box sx={{ mb: 4 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                  Dashboard
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Probationary review management features will be implemented here, including:
-                </Typography>
-                <Box component="ul" sx={{ mt: 2, pl: 2 }}>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    Probationary period tracking
-                  </Typography>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    Regularization workflow management
-                  </Typography>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    Performance assessment during probation
-                  </Typography>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    Extension or termination decisions
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddIcon />}
+                  onClick={() => setCreateProbationaryDialogOpen(true)}
+                >
+                  Create New Probationary Review
+                </Button>
+              </Box>
+
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={2}>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
+                        {probationaryDashboardStats.totalReviews}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Total Reviews
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={2}>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
+                        {probationaryDashboardStats.activeReviews}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Active Reviews
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={2}>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="info.main" sx={{ fontWeight: 'bold' }}>
+                        {probationaryDashboardStats.completedReviews}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Completed
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={2}>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                        {probationaryDashboardStats.totalEmployees}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Total Employees
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={2}>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
+                        {probationaryDashboardStats.completedEmployees}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Reviews Done
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={2}>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
+                        {probationaryDashboardStats.avgProgress}%
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Avg Progress
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Box>
+            
+            {/* Search and Filters for Probationary Reviews */}
+            <Box sx={{ mb: 3 }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    fullWidth
+                    placeholder="Search probationary reviews..."
+                    value={probationarySearchTerm}
+                    onChange={(e) => setProbationarySearchTerm(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                  <FormControl fullWidth>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      value={probationaryStatusFilter}
+                      label="Status"
+                      onChange={(e) => setProbationaryStatusFilter(e.target.value)}
+                    >
+                      <MenuItem value="All">All Statuses</MenuItem>
+                      <MenuItem value="Active">Active</MenuItem>
+                      <MenuItem value="Completed">Completed</MenuItem>
+                      <MenuItem value="Draft">Draft</MenuItem>
+                      <MenuItem value="Archived">Archived</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={3}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<FilterIcon />}
+                    onClick={() => {
+                      setProbationarySearchTerm('');
+                      setProbationaryStatusFilter('All');
+                    }}
+                  >
+                    Clear
+                  </Button>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Probationary Reviews Table */}
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                                     <TableRow>
+                     <TableCell>Review ID</TableCell>
+                     <TableCell>Name</TableCell>
+                     <TableCell>Status</TableCell>
+                     <TableCell>Period</TableCell>
+                     <TableCell>Employees</TableCell>
+                     <TableCell>Progress</TableCell>
+                     <TableCell>Regularization Impact</TableCell>
+                     <TableCell>Actions</TableCell>
+                   </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedProbationaryReviews.map((review) => (
+                    <TableRow 
+                      key={review.id} 
+                      hover 
+                      onClick={() => handleProbationaryReviewClick(review.id)}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          {review.id}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          {review.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Created by {review.createdBy}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={review.status} 
+                          color={getStatusColor(review.status) as any}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {review.period}
+                        </Typography>
+                      </TableCell>
+                                             <TableCell>
+                         <Typography variant="body2">
+                           {review.completedReviews}/{review.totalEmployees}
+                         </Typography>
+                         <LinearProgress 
+                           variant="determinate" 
+                           value={(review.completedReviews / review.totalEmployees) * 100} 
+                           sx={{ height: 4, mt: 1 }}
+                         />
+                       </TableCell>
+                       <TableCell>
+                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                           {review.progress}%
+                         </Typography>
+                         <LinearProgress 
+                           variant="determinate" 
+                           value={review.progress} 
+                           sx={{ height: 4, mt: 1 }}
+                         />
+                       </TableCell>
+                       <TableCell>
+                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                           <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                             {review.regularizationImpact}
+                           </Typography>
+                         </Box>
+                       </TableCell>
+                       <TableCell>
+                         <IconButton size="small">
+                           <MoreVertIcon />
+                         </IconButton>
+                       </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={filteredProbationaryReviews.length}
+                rowsPerPage={probationaryRowsPerPage}
+                page={probationaryPage}
+                onPageChange={(event, newPage) => setProbationaryPage(newPage)}
+                onRowsPerPageChange={(event) => {
+                  setProbationaryRowsPerPage(parseInt(event.target.value, 10));
+                  setProbationaryPage(0);
+                }}
+              />
+            </TableContainer>
           </Box>
         </TabPanel>
       </Paper>
@@ -1217,6 +1652,314 @@ const Reviews: React.FC = () => {
             startIcon={<AddIcon />}
           >
             Create Review
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create New Probationary Review Dialog */}
+      <Dialog 
+        open={createProbationaryDialogOpen} 
+        onClose={() => setCreateProbationaryDialogOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: { maxHeight: '90vh' }
+        }}
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AddIcon color="primary" />
+            Create New Probationary Review
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ pb: 2 }}>
+          <Box sx={{ pt: 2 }}>
+            <Grid container spacing={3}>
+              {/* Basic Information */}
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+                  📋 Basic Information
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Review Name"
+                  placeholder="e.g., Q1 2025 Probationary Review"
+                  value={probationaryFormData.reviewName}
+                  onChange={(e) => handleProbationaryFormChange('reviewName', e.target.value)}
+                  error={!!probationaryFormErrors.reviewName}
+                  helperText={probationaryFormErrors.reviewName || 'Name for the probationary review cycle'}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth required error={!!probationaryFormErrors.period}>
+                  <InputLabel>Probation Period</InputLabel>
+                  <Select
+                    label="Probation Period"
+                    value={probationaryFormData.period}
+                    onChange={(e) => handleProbationaryFormChange('period', e.target.value)}
+                  >
+                    <MenuItem value="3 months">3 months</MenuItem>
+                    <MenuItem value="6 months">6 months</MenuItem>
+                    <MenuItem value="9 months">9 months</MenuItem>
+                    <MenuItem value="12 months">12 months</MenuItem>
+                    <MenuItem value="Custom">Custom</MenuItem>
+                  </Select>
+                  {probationaryFormErrors.period && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                      {probationaryFormErrors.period}
+                    </Typography>
+                  )}
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Start Date"
+                  type="date"
+                  value={probationaryFormData.startDate}
+                  onChange={(e) => handleProbationaryFormChange('startDate', e.target.value)}
+                  error={!!probationaryFormErrors.startDate}
+                  helperText={probationaryFormErrors.startDate || 'When the probationary period begins'}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="End Date"
+                  type="date"
+                  value={probationaryFormData.endDate}
+                  onChange={(e) => handleProbationaryFormChange('endDate', e.target.value)}
+                  error={!!probationaryFormErrors.endDate}
+                  helperText={probationaryFormErrors.endDate || 'When the probationary period ends'}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  multiline
+                  rows={3}
+                  placeholder="Describe the probationary review purpose and criteria..."
+                  value={probationaryFormData.description}
+                  onChange={(e) => handleProbationaryFormChange('description', e.target.value)}
+                />
+              </Grid>
+
+              {/* Employee Selection */}
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+                  👥 Employee Selection
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth required error={!!probationaryFormErrors.includeEmployees}>
+                  <InputLabel>Include Employees</InputLabel>
+                  <Select
+                    label="Include Employees"
+                    multiple
+                    value={probationaryFormData.includeEmployees}
+                    onChange={(e) => handleProbationaryFormChange('includeEmployees', e.target.value)}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {(selected as string[]).map((value) => (
+                          <Chip key={value} label={value} size="small" />
+                        ))}
+                      </Box>
+                    )}
+                  >
+                    <MenuItem value="All Probationary">All Probationary</MenuItem>
+                    <MenuItem value="By Department">By Department</MenuItem>
+                    <MenuItem value="By Level">By Level</MenuItem>
+                    <MenuItem value="Specific Employees">Specific Employees</MenuItem>
+                  </Select>
+                  {probationaryFormErrors.includeEmployees && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                      {probationaryFormErrors.includeEmployees}
+                    </Typography>
+                  )}
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth required error={!!probationaryFormErrors.evaluators}>
+                  <InputLabel>Evaluators</InputLabel>
+                  <Select
+                    label="Evaluators"
+                    multiple
+                    value={probationaryFormData.evaluators}
+                    onChange={(e) => handleProbationaryFormChange('evaluators', e.target.value)}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {(selected as string[]).map((value) => (
+                          <Chip key={value} label={value} size="small" />
+                        ))}
+                      </Box>
+                    )}
+                  >
+                    <MenuItem value="Direct Manager">Direct Manager</MenuItem>
+                    <MenuItem value="Department Head">Department Head</MenuItem>
+                    <MenuItem value="HR Manager">HR Manager</MenuItem>
+                    <MenuItem value="Peer Review">Peer Review</MenuItem>
+                    <MenuItem value="Self Assessment">Self Assessment</MenuItem>
+                  </Select>
+                  {probationaryFormErrors.evaluators && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                      {probationaryFormErrors.evaluators}
+                    </Typography>
+                  )}
+                </FormControl>
+              </Grid>
+
+              {/* Probationary Policies */}
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+                  ⚖️ Probationary Policies
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  label="Regularization Criteria"
+                  placeholder="e.g., Minimum 4.0 rating, all goals met"
+                  value={probationaryFormData.regularizationCriteria}
+                  onChange={(e) => handleProbationaryFormChange('regularizationCriteria', e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  label="Extension Policy"
+                  placeholder="e.g., Up to 3 months extension allowed"
+                  value={probationaryFormData.extensionPolicy}
+                  onChange={(e) => handleProbationaryFormChange('extensionPolicy', e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  label="Termination Policy"
+                  placeholder="e.g., Below 2.5 rating or major policy violation"
+                  value={probationaryFormData.terminationPolicy}
+                  onChange={(e) => handleProbationaryFormChange('terminationPolicy', e.target.value)}
+                />
+              </Grid>
+
+              {/* Review Configuration */}
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+                  ⚙️ Review Configuration
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Rating Scale</InputLabel>
+                  <Select
+                    label="Rating Scale"
+                    value={probationaryFormData.ratingScale}
+                    onChange={(e) => handleProbationaryFormChange('ratingScale', e.target.value)}
+                  >
+                    <MenuItem value="5-point">5-point Scale</MenuItem>
+                    <MenuItem value="10-point">10-point Scale</MenuItem>
+                    <MenuItem value="Percentage">Percentage</MenuItem>
+                    <MenuItem value="Pass/Fail">Pass/Fail</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControlLabel
+                  control={
+                    <Checkbox 
+                      checked={probationaryFormData.includeCompetencies}
+                      onChange={(e) => handleProbationaryFormChange('includeCompetencies', e.target.checked)}
+                    />
+                  }
+                  label="Include Competencies Assessment"
+                />
+              </Grid>
+
+              {/* Notifications */}
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+                  🔔 Notifications & Reminders
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControlLabel
+                  control={
+                    <Checkbox 
+                      checked={probationaryFormData.notifications}
+                      onChange={(e) => handleProbationaryFormChange('notifications', e.target.checked)}
+                    />
+                  }
+                  label="Enable Notifications"
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControlLabel
+                  control={
+                    <Checkbox 
+                      checked={probationaryFormData.autoReminders}
+                      onChange={(e) => handleProbationaryFormChange('autoReminders', e.target.checked)}
+                    />
+                  }
+                  label="Auto Reminders"
+                />
+              </Grid>
+              {probationaryFormData.autoReminders && (
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Escalation Days"
+                    type="number"
+                    placeholder="7"
+                    value={probationaryFormData.escalationDays}
+                    onChange={(e) => handleProbationaryFormChange('escalationDays', parseInt(e.target.value) || 0)}
+                    helperText="Days before deadline to escalate incomplete reviews"
+                    InputProps={{
+                      endAdornment: <InputAdornment position="end">days</InputAdornment>,
+                    }}
+                    inputProps={{ min: 1, max: 30 }}
+                  />
+                </Grid>
+              )}
+              <Grid item xs={12} md={6}>
+                <FormControlLabel
+                  control={
+                    <Checkbox 
+                      checked={probationaryFormData.requireManagerApproval}
+                      onChange={(e) => handleProbationaryFormChange('requireManagerApproval', e.target.checked)}
+                    />
+                  }
+                  label="Require Manager Approval"
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 2 }}>
+          <Button 
+            onClick={() => {
+              setCreateProbationaryDialogOpen(false);
+              resetProbationaryForm();
+            }} 
+            size="large"
+          >
+            Cancel
+          </Button>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleCreateProbationaryReview}
+            size="large"
+            startIcon={<AddIcon />}
+          >
+            Create Probationary Review
           </Button>
         </DialogActions>
       </Dialog>

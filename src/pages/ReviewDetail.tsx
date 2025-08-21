@@ -106,6 +106,13 @@ interface ReviewDetailData {
     }>;
     competencies: string[];
     goalsTemplate: string;
+    newQuestionType: string;
+    newQuestionText: string;
+    newQuestionTarget: string;
+    newQuestionScore: string;
+    newQuestionComment: string;
+    newQuestionPrivate: boolean;
+    newQuestionMultipleChoice: boolean;
   };
   timeline: {
     selfAssessmentStart: string;
@@ -117,6 +124,10 @@ interface ReviewDetailData {
     hrReviewStart: string;
     hrReviewEnd: string;
     finalizationDate: string;
+    selfAssessmentDays: number;
+    managerDeadlineDays: number;
+    discussionDeadlineDays: number;
+    requireDigitalSignatures: boolean;
   };
   payrollImpact: {
     promotionMatrix: Array<{
@@ -199,51 +210,62 @@ const ReviewDetail: React.FC = () => {
          directReportCount: 3,
          specificDirectReports: [],
        },
-      content: {
-        questions: [
-          {
-            id: 'q1',
-            text: 'How well does this employee meet their performance goals?',
-            type: 'rating',
-            required: true,
-            category: 'Performance',
-          },
-          {
-            id: 'q2',
-            text: 'Rate the employee\'s technical skills and expertise.',
-            type: 'rating',
-            required: true,
-            category: 'Technical Skills',
-          },
-          {
-            id: 'q3',
-            text: 'How effectively does this employee collaborate with team members?',
-            type: 'rating',
-            required: true,
-            category: 'Collaboration',
-          },
-          {
-            id: 'q4',
-            text: 'Additional comments or feedback (optional)',
-            type: 'text',
-            required: false,
-            category: 'General Feedback',
-          },
-        ],
-        competencies: ['Technical Skills', 'Leadership', 'Communication', 'Innovation', 'Results Delivery'],
-        goalsTemplate: 'SMART goals template with quarterly milestones and success metrics.',
-      },
-      timeline: {
-        selfAssessmentStart: '2024-01-01',
-        selfAssessmentEnd: '2024-01-15',
-        peerReviewStart: '2024-01-16',
-        peerReviewEnd: '2024-01-31',
-        managerReviewStart: '2024-02-01',
-        managerReviewEnd: '2024-02-15',
-        hrReviewStart: '2024-02-16',
-        hrReviewEnd: '2024-02-28',
-        finalizationDate: '2024-03-15',
-      },
+             content: {
+         questions: [
+           {
+             id: 'q1',
+             text: 'How well does this employee meet their performance goals?',
+             type: 'rating',
+             required: true,
+             category: 'Performance',
+           },
+           {
+             id: 'q2',
+             text: 'Rate the employee\'s technical skills and expertise.',
+             type: 'rating',
+             required: true,
+             category: 'Technical Skills',
+           },
+           {
+             id: 'q3',
+             text: 'How effectively does this employee collaborate with team members?',
+             type: 'rating',
+             required: true,
+             category: 'Collaboration',
+           },
+           {
+             id: 'q4',
+             text: 'Additional comments or feedback (optional)',
+             type: 'text',
+             required: false,
+             category: 'General Feedback',
+           },
+         ],
+         competencies: ['Technical Skills', 'Leadership', 'Communication', 'Innovation', 'Results Delivery'],
+         goalsTemplate: 'SMART goals template with quarterly milestones and success metrics.',
+         newQuestionType: 'custom',
+         newQuestionText: '',
+         newQuestionTarget: 'manager-reviewee',
+         newQuestionScore: 'no-score',
+         newQuestionComment: 'comment-required',
+         newQuestionPrivate: false,
+         newQuestionMultipleChoice: false,
+       },
+             timeline: {
+         selfAssessmentStart: '2024-01-01',
+         selfAssessmentEnd: '2024-01-15',
+         peerReviewStart: '2024-01-16',
+         peerReviewEnd: '2024-01-31',
+         managerReviewStart: '2024-02-01',
+         managerReviewEnd: '2024-02-15',
+         hrReviewStart: '2024-02-16',
+         hrReviewEnd: '2024-02-28',
+         finalizationDate: '2024-03-15',
+         selfAssessmentDays: 21,
+         managerDeadlineDays: 28,
+         discussionDeadlineDays: 35,
+         requireDigitalSignatures: false,
+       },
       payrollImpact: {
         promotionMatrix: [
           { rating: 5.0, promotionProbability: 90, salaryIncrease: 20 },
@@ -1074,102 +1096,765 @@ const ReviewDetail: React.FC = () => {
               📝 Review Content
             </Typography>
             
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Typography variant="h6" sx={{ mb: 2 }}>Review Questions</Typography>
-                <List>
-                  {reviewData.content.questions.map((question) => (
-                    <ListItem key={question.id} divider>
-                      <ListItemText
-                        primary={question.text}
-                        secondary={`Type: ${question.type} • Category: ${question.category} • Required: ${question.required ? 'Yes' : 'No'}`}
-                      />
-                      {isEditing && (
-                        <ListItemSecondaryAction>
-                          <IconButton size="small">
-                            <EditIcon />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      )}
-                    </ListItem>
-                  ))}
-                </List>
-                {isEditing && (
-                  <Button variant="outlined" startIcon={<EditIcon />} sx={{ mt: 2 }}>
-                    Add Question
-                  </Button>
-                )}
-              </Grid>
+            {/* Pre-defined Question Types */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'text.primary' }}>
+                Question Templates
+              </Typography>
               
-              <Grid item xs={12}>
-                <Typography variant="h6" sx={{ mb: 2 }}>Competencies</Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {reviewData.content.competencies.map((competency) => (
-                    <Chip key={competency} label={competency} />
-                  ))}
+              {/* Company-wide Competency Question Card */}
+              <Card sx={{ 
+                mb: 2, 
+                backgroundColor: '#f5f5f5', 
+                border: '1px solid #e0e0e0',
+                borderRadius: 2
+              }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      {/* Drag Handle */}
+                      <Box sx={{ 
+                        cursor: 'grab',
+                        color: '#666',
+                        fontSize: '1.2rem'
+                      }}>
+                        ⋮⋮
+                      </Box>
+                      
+                      {/* Question Info */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ fontSize: '1.1rem' }}>⚙️</Box>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                          Company competency
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary">-</Typography>
+                        <Typography variant="body1" color="text.secondary">Score required</Typography>
+                        <Box sx={{ fontSize: '1.1rem', ml: 1 }}>💬</Box>
+                        <Typography variant="body1" color="text.secondary">Comment optional</Typography>
+                      </Box>
+                    </Box>
+                    
+                    {/* Action Buttons */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        sx={{ 
+                          backgroundColor: '#7b1fa2',
+                          '&:hover': { backgroundColor: '#6a1b9a' }
+                        }}
+                      >
+                        f(x) Dynamic
+                      </Button>
+                      <IconButton size="small">
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+
+              {/* Goal-based Question Card */}
+              <Card sx={{ 
+                mb: 2, 
+                backgroundColor: '#f5f5f5', 
+                border: '1px solid #e0e0e0',
+                borderRadius: 2
+              }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      {/* Drag Handle */}
+                      <Box sx={{ 
+                        cursor: 'grab',
+                        color: '#666',
+                        fontSize: '1.2rem'
+                      }}>
+                        ⋮⋮
+                      </Box>
+                      
+                      {/* Question Info */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ fontSize: '1.1rem' }}>🎯</Box>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                          Goal
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary">-</Typography>
+                        <Typography variant="body1" color="text.secondary">Score required</Typography>
+                        <Box sx={{ fontSize: '1.1rem', ml: 1 }}>💬</Box>
+                        <Typography variant="body1" color="text.secondary">Comment optional</Typography>
+                      </Box>
+                    </Box>
+                    
+                    {/* Action Buttons */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        sx={{ 
+                          backgroundColor: '#7b1fa2',
+                          '&:hover': { backgroundColor: '#6a1b9a' }
+                        }}
+                      >
+                        f(x) Dynamic
+                      </Button>
+                      <IconButton size="small">
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
+
+            {/* New Section Divider */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              mb: 4,
+              position: 'relative'
+            }}>
+              <Divider sx={{ flex: 1 }} />
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1, 
+                px: 2,
+                backgroundColor: 'white',
+                cursor: 'pointer',
+                '&:hover': { color: 'primary.main' }
+              }}>
+                <Box sx={{ 
+                  width: 24, 
+                  height: 24, 
+                  borderRadius: '50%', 
+                  backgroundColor: '#f0f0f0',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '1rem',
+                  fontWeight: 'bold'
+                }}>
+                  +
                 </Box>
-              </Grid>
-            </Grid>
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  New section
+                </Typography>
+              </Box>
+              <Divider sx={{ flex: 1 }} />
+            </Box>
+
+            {/* New Question Form */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'text.primary' }}>
+                New Question
+              </Typography>
+              
+              <Card sx={{ 
+                border: '2px solid #ff9800',
+                borderRadius: 2,
+                backgroundColor: 'white'
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                    <Box sx={{ 
+                      width: 24, 
+                      height: 24, 
+                      borderRadius: '50%', 
+                      backgroundColor: '#ff9800',
+                      color: 'white',
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      fontSize: '1rem',
+                      fontWeight: 'bold'
+                    }}>
+                      +
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      New question
+                    </Typography>
+                  </Box>
+
+                  <Grid container spacing={3}>
+                    {/* Question Type */}
+                    <Grid item xs={12} md={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Question type</InputLabel>
+                        <Select
+                          label="Question type"
+                          value={reviewData.content.newQuestionType || 'custom'}
+                          onChange={(e) => setReviewData(prev => prev ? {
+                            ...prev,
+                            content: { ...prev.content, newQuestionType: e.target.value }
+                          } : null)}
+                          disabled={!isEditing}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderColor: '#ff9800',
+                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#ff9800'
+                              }
+                            }
+                          }}
+                        >
+                          <MenuItem value="custom">Custom</MenuItem>
+                          <MenuItem value="competency">Company Competency</MenuItem>
+                          <MenuItem value="goal">Goal-based</MenuItem>
+                          <MenuItem value="rating">Rating Scale</MenuItem>
+                          <MenuItem value="text">Text Response</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    {/* Question Text */}
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Question text *"
+                        multiline
+                        rows={3}
+                        value={reviewData.content.newQuestionText || ''}
+                        onChange={(e) => setReviewData(prev => prev ? {
+                          ...prev,
+                          content: { ...prev.content, newQuestionText: e.target.value }
+                        } : null)}
+                        disabled={!isEditing}
+                        placeholder="What's the question"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton size="small">
+                                <Typography variant="caption">A文</Typography>
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    {/* Add Description Button */}
+                    <Grid item xs={12}>
+                      <Button
+                        variant="text"
+                        startIcon={
+                          <Box sx={{ 
+                            width: 20, 
+                            height: 20, 
+                            borderRadius: '50%', 
+                            backgroundColor: '#f0f0f0',
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            fontSize: '0.8rem',
+                            fontWeight: 'bold'
+                          }}>
+                            +
+                          </Box>
+                        }
+                        sx={{ color: 'text.secondary', textTransform: 'none' }}
+                      >
+                        Add description
+                      </Button>
+                    </Grid>
+
+                    {/* Ask the question to */}
+                    <Grid item xs={12} md={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Ask the question to *</InputLabel>
+                        <Select
+                          label="Ask the question to *"
+                          value={reviewData.content.newQuestionTarget || 'manager-reviewee'}
+                          onChange={(e) => setReviewData(prev => prev ? {
+                            ...prev,
+                            content: { ...prev.content, newQuestionTarget: e.target.value }
+                          } : null)}
+                          disabled={!isEditing}
+                        >
+                          <MenuItem value="manager-reviewee">Manager, Reviewee</MenuItem>
+                          <MenuItem value="manager-only">Manager only</MenuItem>
+                          <MenuItem value="reviewee-only">Reviewee only</MenuItem>
+                          <MenuItem value="peers">Peers</MenuItem>
+                          <MenuItem value="direct-reports">Direct Reports</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    {/* Score */}
+                    <Grid item xs={12} md={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Score *</InputLabel>
+                        <Select
+                          label="Score *"
+                          value={reviewData.content.newQuestionScore || 'no-score'}
+                          onChange={(e) => setReviewData(prev => prev ? {
+                            ...prev,
+                            content: { ...prev.content, newQuestionScore: e.target.value }
+                          } : null)}
+                          disabled={!isEditing}
+                        >
+                          <MenuItem value="no-score">No score</MenuItem>
+                          <MenuItem value="1-5">1-5 Scale</MenuItem>
+                          <MenuItem value="1-10">1-10 Scale</MenuItem>
+                          <MenuItem value="percentage">Percentage</MenuItem>
+                          <MenuItem value="yes-no">Yes/No</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    {/* Comment */}
+                    <Grid item xs={12} md={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Comment *</InputLabel>
+                        <Select
+                          label="Comment *"
+                          value={reviewData.content.newQuestionComment || 'comment-required'}
+                          onChange={(e) => setReviewData(prev => prev ? {
+                            ...prev,
+                            content: { ...prev.content, newQuestionComment: e.target.value }
+                          } : null)}
+                          disabled={!isEditing}
+                        >
+                          <MenuItem value="comment-required">Comment required</MenuItem>
+                          <MenuItem value="comment-optional">Comment optional</MenuItem>
+                          <MenuItem value="no-comment">No comment</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    {/* Checkboxes */}
+                    <Grid item xs={12}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={reviewData.content.newQuestionPrivate || false}
+                              onChange={(e) => setReviewData(prev => prev ? {
+                                ...prev,
+                                content: { ...prev.content, newQuestionPrivate: e.target.checked }
+                              } : null)}
+                              disabled={!isEditing}
+                            />
+                          }
+                          label="Make private (only manager and admin can see the response)"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={reviewData.content.newQuestionMultipleChoice || false}
+                              onChange={(e) => setReviewData(prev => prev ? {
+                                ...prev,
+                                content: { ...prev.content, newQuestionMultipleChoice: e.target.checked }
+                              } : null)}
+                              disabled={!isEditing}
+                            />
+                          }
+                          label="Multiple-choice question"
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+
+                  {/* Footer Actions */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    mt: 3,
+                    pt: 2,
+                    borderTop: '1px solid #e0e0e0'
+                  }}>
+                    {/* Display Rules */}
+                    <Button
+                      variant="text"
+                      startIcon={<Box sx={{ fontSize: '1.1rem' }}>🔍</Box>}
+                      sx={{ color: 'text.secondary', textTransform: 'none' }}
+                    >
+                      Display rules
+                    </Button>
+
+                    {/* Action Buttons */}
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Button
+                        variant="outlined"
+                        onClick={() => {
+                          // Reset form
+                          setReviewData(prev => prev ? {
+                            ...prev,
+                            content: { 
+                              ...prev.content, 
+                              newQuestionType: 'custom',
+                              newQuestionText: '',
+                              newQuestionTarget: 'manager-reviewee',
+                              newQuestionScore: 'no-score',
+                              newQuestionComment: 'comment-required',
+                              newQuestionPrivate: false,
+                              newQuestionMultipleChoice: false
+                            }
+                          } : null);
+                        }}
+                        sx={{ 
+                          backgroundColor: '#f5f5f5',
+                          borderColor: '#e0e0e0',
+                          color: 'text.primary'
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="contained"
+                        onClick={() => {
+                          // Save new question logic here
+                          console.log('Saving new question:', reviewData?.content);
+                        }}
+                        sx={{ 
+                          backgroundColor: '#7b1fa2',
+                          '&:hover': { backgroundColor: '#6a1b9a' }
+                        }}
+                      >
+                        Save
+                      </Button>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
+
+            {/* Existing Questions */}
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'text.primary' }}>
+                Existing Questions
+              </Typography>
+              <List>
+                {reviewData.content.questions.map((question) => (
+                  <ListItem key={question.id} divider>
+                    <ListItemText
+                      primary={question.text}
+                      secondary={`Type: ${question.type} • Category: ${question.category} • Required: ${question.required ? 'Yes' : 'No'}`}
+                    />
+                    {isEditing && (
+                      <ListItemSecondaryAction>
+                        <IconButton size="small">
+                          <EditIcon />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    )}
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
           </Box>
         </TabPanel>
 
-        {/* Timeline & Evaluators Tab */}
+        {/* Timeline Tab */}
         <TabPanel value={tabValue} index={3}>
           <Box sx={{ p: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'primary.main' }}>
-              ⏱️ Timeline & Evaluators
+              ⏱️ Timeline
             </Typography>
             
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" sx={{ mb: 2 }}>Evaluators</Typography>
-                <FormControl fullWidth>
-                  <InputLabel>Evaluator Types</InputLabel>
-                  <Select
-                    label="Evaluator Types"
-                    multiple
-                    value={reviewData.evaluators}
-                    onChange={(e) => setReviewData(prev => prev ? { ...prev, evaluators: e.target.value as string[] } : null)}
-                    disabled={!isEditing}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {(selected as string[]).map((value) => (
-                          <Chip key={value} label={value} size="small" />
-                        ))}
-                      </Box>
-                    )}
-                  >
-                    <MenuItem value="Direct Manager">Direct Manager</MenuItem>
-                    <MenuItem value="Peer Review">Peer Review</MenuItem>
-                    <MenuItem value="Self Assessment">Self Assessment</MenuItem>
-                    <MenuItem value="Department Head">Department Head</MenuItem>
-                    <MenuItem value="HR Review">HR Review</MenuItem>
-                    <MenuItem value="Skip Level Manager">Skip Level Manager</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" sx={{ mb: 2 }}>Timeline</Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <Typography variant="body2" color="text.secondary">
-                      Self Assessment: {new Date(reviewData.timeline.selfAssessmentStart).toLocaleDateString()} - {new Date(reviewData.timeline.selfAssessmentEnd).toLocaleDateString()}
+            <Box sx={{ display: 'flex', gap: 4 }}>
+              {/* Left Side - Vertical Timeline */}
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center',
+                minWidth: 200,
+                position: 'relative'
+              }}>
+                {/* Vertical Line */}
+                <Box sx={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: 0,
+                  bottom: 0,
+                  width: 2,
+                  backgroundColor: '#e0e0e0',
+                  transform: 'translateX(-50%)',
+                  zIndex: 1
+                }} />
+                
+                {/* Timeline Steps */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center',
+                  gap: 4,
+                  position: 'relative',
+                  zIndex: 2
+                }}>
+                  {/* Step 1: Kickoff */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    <Box sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      backgroundColor: '#1976d2',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 'bold',
+                      fontSize: '1.1rem'
+                    }}>
+                      1
+                    </Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                      Kickoff
                     </Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="body2" color="text.secondary">
-                      Peer Review: {new Date(reviewData.timeline.peerReviewStart).toLocaleDateString()} - {new Date(reviewData.timeline.peerReviewEnd).toLocaleDateString()}
+                  </Box>
+
+                  {/* Step 2: Self-Assessment Deadline */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    <Box sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      backgroundColor: '#1976d2',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 'bold',
+                      fontSize: '1.1rem'
+                    }}>
+                      2
+                    </Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                      Self-Assessment Deadline
                     </Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="body2" color="text.secondary">
-                      Manager Review: {new Date(reviewData.timeline.managerReviewStart).toLocaleDateString()} - {new Date(reviewData.timeline.managerReviewEnd).toLocaleDateString()}
+                  </Box>
+
+                  {/* Step 3: Manager Deadline */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    <Box sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      backgroundColor: '#1976d2',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 'bold',
+                      fontSize: '1.1rem'
+                    }}>
+                      3
+                    </Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                      Manager Deadline
                     </Typography>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
+                  </Box>
+
+                  {/* Step 4: Discussion Deadline */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    <Box sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      backgroundColor: '#1976d2',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 'bold',
+                      fontSize: '1.1rem'
+                    }}>
+                      4
+                    </Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                      Discussion Deadline
+                    </Typography>
+                  </Box>
+
+                  {/* Step 5: Cycle Closure */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    <Box sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      backgroundColor: '#1976d2',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 'bold',
+                      fontSize: '1.1rem'
+                    }}>
+                      5
+                    </Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                      Cycle Closure
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+              {/* Right Side - Configuration Settings */}
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: 'text.primary' }}>
+                  Timeline Configuration
+                </Typography>
+                
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {/* Self-Assessment Deadline Configuration */}
+                  <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 1, backgroundColor: '#fafafa' }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+                      Self-Assessment Deadline
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                      <TextField
+                        type="number"
+                        value={reviewData.timeline.selfAssessmentDays || 21}
+                        onChange={(e) => setReviewData(prev => prev ? {
+                          ...prev,
+                          timeline: { ...prev.timeline, selfAssessmentDays: parseInt(e.target.value) || 0 }
+                        } : null)}
+                        disabled={!isEditing}
+                        sx={{ width: 80 }}
+                        inputProps={{ min: 1, max: 365 }}
+                      />
+                      <Typography variant="body1">
+                        days after kickoff
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Deadline for peer, direct report, and/or self assessments
+                    </Typography>
+                  </Box>
+
+                  {/* Manager Deadline Configuration */}
+                  <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 1, backgroundColor: '#fafafa' }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+                      Manager Deadline
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                      <TextField
+                        type="number"
+                        value={reviewData.timeline.managerDeadlineDays || 28}
+                        onChange={(e) => setReviewData(prev => prev ? {
+                          ...prev,
+                          timeline: { ...prev.timeline, managerDeadlineDays: parseInt(e.target.value) || 0 }
+                        } : null)}
+                        disabled={!isEditing}
+                        sx={{ width: 80 }}
+                        inputProps={{ min: 1, max: 365 }}
+                      />
+                      <Typography variant="body1">
+                        days after kickoff
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      Deadline for assessments by the participants' managers.
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      You can enable calibrations or control the time when assessments get shared with employees in the visibility settings.
+                    </Typography>
+                  </Box>
+
+                  {/* Discussion Deadline Configuration */}
+                  <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 1, backgroundColor: '#fafafa' }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+                      Discussion Deadline
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                      <TextField
+                        type="number"
+                        value={reviewData.timeline.discussionDeadlineDays || 35}
+                        onChange={(e) => setReviewData(prev => prev ? {
+                          ...prev,
+                          timeline: { ...prev.timeline, discussionDeadlineDays: parseInt(e.target.value) || 0 }
+                        } : null)}
+                        disabled={!isEditing}
+                        sx={{ width: 200 }}
+                        inputProps={{ min: 1, max: 365 }}
+                      />
+                      <Typography variant="body1">
+                        days after kickoff
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Deadline for discussions and digital signatures.
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={reviewData.timeline.requireDigitalSignatures || false}
+                            onChange={(e) => setReviewData(prev => prev ? {
+                              ...prev,
+                              timeline: { ...prev.timeline, requireDigitalSignatures: e.target.checked }
+                            } : null)}
+                            disabled={!isEditing}
+                          />
+                        }
+                        label=""
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        The manager and the reviewee need to sign the review after sharing it to lock it permanently.
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Cycle Closure Configuration */}
+                  <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 1, backgroundColor: '#fafafa' }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+                      Cycle Closure
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      The exact date will be defined manually by admin or cycle owner
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Save Button */}
+                {isEditing && (
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      endIcon={<Box sx={{ fontSize: '1.2rem' }}>→</Box>}
+                      sx={{ 
+                        px: 3, 
+                        py: 1.5, 
+                        borderRadius: 2,
+                        backgroundColor: '#7b1fa2',
+                        '&:hover': {
+                          backgroundColor: '#6a1b9a'
+                        }
+                      }}
+                    >
+                      Save and continue
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            </Box>
           </Box>
         </TabPanel>
 

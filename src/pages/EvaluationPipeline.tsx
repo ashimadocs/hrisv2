@@ -37,6 +37,10 @@ interface Employee {
   completionDate?: string;
   rating?: number;
   status?: string;
+  manager?: string;
+  checklistCompleted?: number;
+  checklistTotal?: number;
+  daysRemaining?: number;
 }
 
 interface Stage {
@@ -144,9 +148,9 @@ const EvaluationPipeline: React.FC = () => {
       title: 'All Probationary',
       color: '#ff9800',
       employees: [
-        { id: 1, name: 'Alex Rodriguez', position: 'Junior Developer', startDate: '2023-10-15', endDate: '2024-01-15' },
-        { id: 2, name: 'Maya Patel', position: 'Marketing Assistant', startDate: '2023-11-01', endDate: '2024-02-01' },
-        { id: 3, name: 'Jordan Kim', position: 'Sales Rep', startDate: '2023-11-15', endDate: '2024-02-15' },
+        { id: 1, name: 'Alex Rodriguez', position: 'Junior Developer', startDate: '2023-10-15', endDate: '2024-01-15', dueDate: '2024-01-10' },
+        { id: 2, name: 'Maya Patel', position: 'Marketing Assistant', startDate: '2023-11-01', endDate: '2024-02-01', dueDate: '2024-01-25' },
+        { id: 3, name: 'Jordan Kim', position: 'Sales Rep', startDate: '2023-11-15', endDate: '2024-02-15', dueDate: '2024-02-10' },
       ]
     },
     {
@@ -154,7 +158,7 @@ const EvaluationPipeline: React.FC = () => {
       title: 'Self Assessment',
       color: '#2196f3',
       employees: [
-        { id: 4, name: 'Sofia Chen', position: 'HR Assistant', startDate: '2023-10-01', endDate: '2024-01-01', progress: 60 },
+        { id: 4, name: 'Sofia Chen', position: 'HR Assistant', startDate: '2023-10-01', endDate: '2024-01-01', progress: 60, dueDate: '2024-01-05' },
       ]
     },
     {
@@ -162,7 +166,7 @@ const EvaluationPipeline: React.FC = () => {
       title: 'Manager Assessment',
       color: '#9c27b0',
       employees: [
-        { id: 5, name: 'Marcus Thompson', position: 'Customer Support', startDate: '2023-09-15', endDate: '2023-12-15', progress: 80 },
+        { id: 5, name: 'Marcus Thompson', position: 'Customer Support', startDate: '2023-09-15', endDate: '2023-12-15', progress: 80, dueDate: '2023-12-10' },
       ]
     },
     {
@@ -170,8 +174,10 @@ const EvaluationPipeline: React.FC = () => {
       title: 'Evaluation Completed',
       color: '#4caf50',
       employees: [
-        { id: 6, name: 'Emma Wilson', position: 'Data Analyst', startDate: '2023-08-01', endDate: '2023-11-01', status: 'Evaluation Complete' },
-        { id: 9, name: 'David Park', position: 'UX Designer', startDate: '2023-08-15', endDate: '2023-11-15', status: 'All Assessments Done' },
+        { id: 6, name: 'Emma Wilson', position: 'Data Analyst', startDate: '2023-08-01', endDate: '2023-11-01', status: 'Pass - 85%', dueDate: '2023-10-25' },
+        { id: 9, name: 'David Park', position: 'UX Designer', startDate: '2023-08-15', endDate: '2023-11-15', status: 'Fail - 45%', dueDate: '2023-11-10' },
+        { id: 10, name: 'Lisa Chen', position: 'Product Manager', startDate: '2023-09-01', endDate: '2023-12-01', status: 'Extend', dueDate: '2023-11-20' },
+        { id: 11, name: 'Ryan Johnson', position: 'Software Engineer', startDate: '2023-08-20', endDate: '2023-11-20', status: 'Pass - 92%', dueDate: '2023-11-15' },
       ]
     },
     {
@@ -179,8 +185,9 @@ const EvaluationPipeline: React.FC = () => {
       title: 'Ready for Regularization',
       color: '#ffc107',
       employees: [
-        { id: 7, name: 'Priya Sharma', position: 'Business Analyst', startDate: '2023-08-15', endDate: '2023-11-15', status: 'Approved' },
-        { id: 8, name: 'Carlos Mendez', position: 'Content Writer', startDate: '2023-09-01', endDate: '2023-12-01', status: 'Pending HR Review' },
+        { id: 7, name: 'Priya Sharma', position: 'Business Analyst', startDate: '2023-08-15', endDate: '2023-11-15', status: 'Approved', dueDate: '2023-11-05', checklistCompleted: 8, checklistTotal: 10 },
+        { id: 8, name: 'Carlos Mendez', position: 'Content Writer', startDate: '2023-09-01', endDate: '2023-12-01', status: 'Pending', dueDate: '2023-11-25', checklistCompleted: 6, checklistTotal: 10 },
+        { id: 12, name: 'Sarah Williams', position: 'Data Scientist', startDate: '2023-07-15', endDate: '2023-10-15', status: 'Rejected', dueDate: '2023-10-10', checklistCompleted: 3, checklistTotal: 10 },
       ]
     }
   ];
@@ -198,100 +205,154 @@ const EvaluationPipeline: React.FC = () => {
     }
   };
 
-  const renderEmployeeCard = (employee: Employee, stageType: string) => (
-    <Card 
-      key={employee.id} 
-      sx={{ 
-        mb: 2, 
-        cursor: 'pointer', 
-        '&:hover': { 
-          boxShadow: 3,
-          transform: 'translateY(-2px)',
-          transition: 'all 0.2s ease-in-out'
-        } 
-      }}
-      onClick={() => handleEmployeeClick(employee.id, employee.name)}
-    >
-      <CardContent sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
-            {employee.name.charAt(0)}
-          </Avatar>
-          <IconButton 
-            size="small" 
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent card click when clicking the menu
-            }}
-          >
-            <MoreVertIcon fontSize="small" />
-          </IconButton>
-        </Box>
-        
-        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-          {employee.name}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-          {employee.position}
-        </Typography>
+  const renderEmployeeCard = (employee: Employee, stageType: string) => {
+    // Calculate days remaining for probationary employees
+    let daysRemaining = 0;
+    if (stageType === 'probationary' && employee.endDate) {
+      const endDate = new Date(employee.endDate);
+      const today = new Date();
+      daysRemaining = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    }
 
-        {stageType === 'performance' && employee.priority && (
-          <Chip 
-            label={employee.priority} 
-            color={getPriorityColor(employee.priority) as any}
-            size="small"
-            sx={{ mb: 1 }}
-          />
-        )}
-
-        {stageType === 'probationary' && employee.startDate && (
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-            Start: {new Date(employee.startDate).toLocaleDateString()}
+    return (
+      <Card 
+        key={employee.id} 
+        sx={{ 
+          mb: 2, 
+          cursor: 'pointer', 
+          backgroundColor: stageType === 'probationary' ? '#fff8e1' : 'white', // Light yellow background for probationary
+          '&:hover': { 
+            boxShadow: 3,
+            transform: 'translateY(-2px)',
+            transition: 'all 0.2s ease-in-out'
+          } 
+        }}
+        onClick={() => handleEmployeeClick(employee.id, employee.name)}
+      >
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+            <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
+              {employee.name.charAt(0)}
+            </Avatar>
+            
+            {/* Status tags on the right top */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+                             {stageType === 'performance' && employee.priority && (
+                 <Chip 
+                   label={employee.priority} 
+                   color={getPriorityColor(employee.priority) as any}
+                   size="small"
+                   sx={{ fontSize: '0.75rem', height: 24, minWidth: 60 }}
+                 />
+               )}
+               
+               {stageType === 'probationary' && employee.status && (
+                 <Chip 
+                   label={employee.status} 
+                   color={
+                     employee.status.includes('Pass') ? 'success' : 
+                     employee.status.includes('Fail') ? 'error' : 
+                     employee.status === 'Extend' ? 'warning' : 
+                     employee.status === 'Approved' ? 'success' : 
+                     employee.status === 'Rejected' ? 'error' : 'default'
+                   }
+                   size="small"
+                   sx={{ fontSize: '0.75rem', height: 24, minWidth: 60 }}
+                 />
+               )}
+              
+              <IconButton 
+                size="small" 
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent card click when clicking the menu
+                }}
+              >
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+          
+          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+            {employee.name}
           </Typography>
-        )}
-
-        {employee.dueDate && (
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-            Due: {new Date(employee.dueDate).toLocaleDateString()}
+            {employee.position}
           </Typography>
-        )}
 
-        {employee.progress !== undefined && (
-          <Box sx={{ mt: 1 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-              <Typography variant="caption">Progress</Typography>
-              <Typography variant="caption" color="primary">
-                {employee.progress}%
+          {/* Combined start and end dates in one row */}
+          {stageType === 'probationary' && employee.startDate && employee.endDate && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+              {new Date(employee.startDate).toLocaleDateString()} - {new Date(employee.endDate).toLocaleDateString()}
+            </Typography>
+          )}
+
+          {/* Due date with days remaining */}
+          {stageType === 'probationary' && employee.dueDate && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Typography variant="caption" color="text.secondary">
+                Due: {new Date(employee.dueDate).toLocaleDateString()}
+              </Typography>
+              {daysRemaining > 0 && (
+                <Typography variant="caption" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                  {daysRemaining} days left
+                </Typography>
+              )}
+            </Box>
+          )}
+
+          {/* Regularization checklist without percentage text */}
+          {stageType === 'probationary' && employee.checklistCompleted !== undefined && employee.checklistTotal !== undefined && (
+            <Box sx={{ mt: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                <Typography variant="caption">Regularization Checklist</Typography>
+                <Typography variant="caption" color="primary">
+                  {employee.checklistCompleted}/{employee.checklistTotal}
+                </Typography>
+              </Box>
+              <LinearProgress 
+                variant="determinate" 
+                value={(employee.checklistCompleted / employee.checklistTotal) * 100} 
+                sx={{ height: 4 }}
+              />
+            </Box>
+          )}
+
+          {/* Progress for non-completed stages */}
+          {employee.progress !== undefined && stageType !== 'probationary' && (
+            <Box sx={{ mt: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                <Typography variant="caption">Progress</Typography>
+                <Typography variant="caption" color="primary">
+                  {employee.progress}%
+                </Typography>
+              </Box>
+              <LinearProgress 
+                variant="determinate" 
+                value={employee.progress} 
+                sx={{ height: 4 }}
+              />
+            </Box>
+          )}
+
+          {/* Rating for performance reviews */}
+          {employee.rating && (
+            <Box sx={{ mt: 1 }}>
+              <Typography variant="caption" color="primary" sx={{ fontWeight: 'bold' }}>
+                Rating: {employee.rating}/5
               </Typography>
             </Box>
-            <LinearProgress 
-              variant="determinate" 
-              value={employee.progress} 
-              sx={{ height: 4 }}
-            />
-          </Box>
-        )}
+          )}
 
-        {employee.rating && (
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="caption" color="primary" sx={{ fontWeight: 'bold' }}>
-              Rating: {employee.rating}/5
+          {/* Due date for performance reviews */}
+          {employee.dueDate && stageType !== 'probationary' && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+              Due: {new Date(employee.dueDate).toLocaleDateString()}
             </Typography>
-          </Box>
-        )}
-
-        {employee.status && (
-          <Chip 
-            label={employee.status} 
-            color="success"
-            size="small"
-            sx={{ mt: 1 }}
-          />
-        )}
-
-
-      </CardContent>
-    </Card>
-  );
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   const renderKanbanBoard = (stages: Stage[], stageType: string) => (
     <Box sx={{ overflowX: 'auto' }}>
