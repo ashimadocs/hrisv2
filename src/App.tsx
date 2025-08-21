@@ -24,6 +24,8 @@ import Engagement from './pages/Engagement';
 import EmployeeProfile from './pages/EmployeeProfile';
 // Review Detail
 import ReviewDetail from './pages/ReviewDetail';
+// Probationary Review Detail
+import ProbationaryEmployeeDetail from './pages/ProbationaryEmployeeDetail';
 
 function App() {
   return (
@@ -53,6 +55,8 @@ function App() {
             <Route path="/employee-profile" element={<EmployeeProfile />} />
             {/* Review Detail */}
             <Route path="/review-detail/:reviewId" element={<ReviewDetail />} />
+            {/* Probationary Employee Detail */}
+            <Route path="/probationary-employee-detail/:employeeId" element={<ProbationaryEmployeeDetail />} />
           </Routes>
         </Box>
       </Container>

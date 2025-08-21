@@ -113,6 +113,7 @@ interface ReviewDetailData {
     newQuestionComment: string;
     newQuestionPrivate: boolean;
     newQuestionMultipleChoice: boolean;
+    showCompetencyDetails: boolean;
   };
   timeline: {
     selfAssessmentStart: string;
@@ -250,6 +251,7 @@ const ReviewDetail: React.FC = () => {
          newQuestionComment: 'comment-required',
          newQuestionPrivate: false,
          newQuestionMultipleChoice: false,
+         showCompetencyDetails: false,
        },
              timeline: {
          selfAssessmentStart: '2024-01-01',

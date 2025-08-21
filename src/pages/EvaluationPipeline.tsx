@@ -75,14 +75,26 @@ const EvaluationPipeline: React.FC = () => {
   };
 
   const handleEmployeeClick = (employeeId: number, employeeName: string) => {
-    // Navigate to employee profile page
-    navigate('/employee-profile', { 
-      state: { 
-        employeeId, 
-        employeeName,
-        fromEvaluation: true 
-      } 
-    });
+    // Navigate to appropriate detail page based on current tab
+    if (tabValue === 0) {
+      // Performance Review tab - navigate to employee profile
+      navigate('/employee-profile', { 
+        state: { 
+          employeeId, 
+          employeeName,
+          fromEvaluation: true 
+        } 
+      });
+    } else {
+      // Probationary Review tab - navigate to probationary employee detail
+      navigate(`/probationary-employee-detail/${employeeId}`, {
+        state: {
+          employeeId,
+          employeeName,
+          fromProbationary: true
+        }
+      });
+    }
   };
 
   // Performance Review Data
