@@ -33,6 +33,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  TextField,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -804,7 +805,7 @@ const ProbationaryEmployeeDetail: React.FC = () => {
             </Typography>
             
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              Detailed comparison of probationary vs. regularized compensation and benefits.
+              Detailed comparison of current probationary vs. regularized compensation and benefits. Regularized values can be adjusted by admin.
             </Typography>
 
             {/* Salary Section */}
@@ -820,7 +821,7 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                   <Grid item xs={12} md={6}>
                     <Card>
                       <CardContent>
-                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Probationary</Typography>
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Current (Probationary)</Typography>
                         <Typography variant="h4" color="warning.main" sx={{ fontWeight: 'bold' }}>
                           ${employeeData.compensationChanges.probationary.salary.toLocaleString()}
                         </Typography>
@@ -833,10 +834,32 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                   <Grid item xs={12} md={6}>
                     <Card>
                       <CardContent>
-                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Regularized</Typography>
-                        <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
-                          ${employeeData.compensationChanges.regularized.salary.toLocaleString()}
-                        </Typography>
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Regularized (Editable)</Typography>
+                        {isEditing ? (
+                          <TextField
+                            fullWidth
+                            type="number"
+                            value={employeeData.compensationChanges.regularized.salary}
+                            onChange={(e) => setEmployeeData(prev => ({
+                              ...prev!,
+                              compensationChanges: {
+                                ...prev!.compensationChanges,
+                                regularized: {
+                                  ...prev!.compensationChanges.regularized,
+                                  salary: parseInt(e.target.value) || 0
+                                }
+                              }
+                            }))}
+                            sx={{ mb: 2 }}
+                            InputProps={{
+                              startAdornment: <Typography variant="h6" sx={{ mr: 1 }}>$</Typography>
+                            }}
+                          />
+                        ) : (
+                          <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
+                            ${employeeData.compensationChanges.regularized.salary.toLocaleString()}
+                          </Typography>
+                        )}
                         <Typography variant="body2" color="text.secondary">
                           Annual salary after regularization
                         </Typography>
@@ -844,6 +867,34 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                     </Card>
                   </Grid>
                 </Grid>
+                
+                {/* Salary Change Highlight */}
+                <Box sx={{ mt: 3, p: 3, backgroundColor: 'primary.light', borderRadius: 2, color: 'white' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+                    💰 Salary Change Summary
+                  </Typography>
+                  <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                        ${employeeData.compensationChanges.regularized.salary - employeeData.compensationChanges.probationary.salary}
+                      </Typography>
+                      <Typography variant="body2">Annual Increase</Typography>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                        {Math.round(((employeeData.compensationChanges.regularized.salary - employeeData.compensationChanges.probationary.salary) / employeeData.compensationChanges.probationary.salary) * 100)}%
+                      </Typography>
+                      <Typography variant="body2">Percentage Increase</Typography>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                        ${Math.round((employeeData.compensationChanges.regularized.salary - employeeData.compensationChanges.probationary.salary) / 12)}
+                      </Typography>
+                      <Typography variant="body2">Monthly Increase</Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+                
                 <Box sx={{ mt: 2, p: 2, backgroundColor: 'background.paper', borderRadius: 1 }}>
                   <Typography variant="body2" color="text.secondary">
                     <strong>Effective Date:</strong> {new Date(employeeData.compensationChanges.effectiveDate).toLocaleDateString()}
@@ -870,51 +921,99 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                 </Box>
               </AccordionSummary>
               <AccordionDetails>
-                <Grid container spacing={3}>
-                  {/* Allowances */}
-                  <Grid item xs={12} md={6}>
-                    <Card>
-                      <CardContent>
-                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Allowances</Typography>
-                        <Box sx={{ mb: 2 }}>
-                          <Typography variant="subtitle2" color="text.secondary">Probationary:</Typography>
-                          <Typography variant="body2">
-                            {employeeData.compensationChanges.probationary.allowances.length > 0 ? 
-                              employeeData.compensationChanges.probationary.allowances.join(', ') : 'None'}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="subtitle2" color="text.secondary">Regularized:</Typography>
-                          <Typography variant="body2">
-                            {employeeData.compensationChanges.regularized.allowances.join(', ')}
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  
-                  {/* Bonuses */}
-                  <Grid item xs={12} md={6}>
-                    <Card>
-                      <CardContent>
-                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Bonuses</Typography>
-                        <Box sx={{ mb: 2 }}>
-                          <Typography variant="subtitle2" color="text.secondary">Probationary:</Typography>
-                          <Typography variant="body2">
-                            {employeeData.compensationChanges.probationary.bonuses.length > 0 ? 
-                              employeeData.compensationChanges.probationary.bonuses.join(', ') : 'None'}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="subtitle2" color="text.secondary">Regularized:</Typography>
-                          <Typography variant="body2">
-                            {employeeData.compensationChanges.regularized.bonuses.join(', ')}
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Benefits comparison showing what continues, stops, and new benefits upon regularization.
+                </Typography>
+                
+                <TableContainer component={Paper} sx={{ mb: 3 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Benefit Item</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Current (Probationary)</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Regularized</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {/* Allowances */}
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold', backgroundColor: 'grey.50' }}>Allowances</TableCell>
+                        <TableCell></TableCell>
+                        <TableCell></TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ pl: 4 }}>Training Allowance</TableCell>
+                        <TableCell>
+                          <Chip label="Active" color="success" size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="Stopped" color="error" size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="Discontinued" color="warning" size="small" />
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ pl: 4 }}>Mobile Allowance</TableCell>
+                        <TableCell>
+                          <Chip label="None" color="default" size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="New" color="success" size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="Added" color="success" size="small" />
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ pl: 4 }}>Transportation Allowance</TableCell>
+                        <TableCell>
+                          <Chip label="None" color="default" size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="New" color="success" size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="Added" color="success" size="small" />
+                        </TableCell>
+                      </TableRow>
+                      
+                      {/* Bonuses */}
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold', backgroundColor: 'grey.50' }}>Bonuses</TableCell>
+                        <TableCell></TableCell>
+                        <TableCell></TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ pl: 4 }}>Sign-in Bonus</TableCell>
+                        <TableCell>
+                          <Chip label="None" color="default" size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="New" color="success" size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="Added" color="success" size="small" />
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ pl: 4 }}>Attendance Bonus</TableCell>
+                        <TableCell>
+                          <Chip label="None" color="default" size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="New" color="success" size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="Added" color="success" size="small" />
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </AccordionDetails>
             </Accordion>
 
@@ -927,34 +1026,104 @@ const ProbationaryEmployeeDetail: React.FC = () => {
                 </Box>
               </AccordionSummary>
               <AccordionDetails>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Card>
-                      <CardContent>
-                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Probationary</Typography>
-                        <Typography variant="h4" color="warning.main" sx={{ fontWeight: 'bold' }}>
-                          {employeeData.compensationChanges.probationary.leaves} days
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Annual leave entitlement
-                        </Typography>
-                      </CardContent>
-                    </Card>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Leave credits earned during probationary period and available upon regularization.
+                </Typography>
+                
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Leave Type</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Date Earned</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Credits Earned</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Credits Available</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Notes</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Annual Leave</TableCell>
+                        <TableCell>{new Date(employeeData.startDate).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <TextField
+                              type="number"
+                              value={employeeData.compensationChanges.regularized.leaves}
+                              onChange={(e) => setEmployeeData(prev => ({
+                                ...prev!,
+                                compensationChanges: {
+                                  ...prev!.compensationChanges,
+                                  regularized: {
+                                    ...prev!.compensationChanges.regularized,
+                                    leaves: parseInt(e.target.value) || 0
+                                  }
+                                }
+                              }))}
+                              size="small"
+                              sx={{ width: 80 }}
+                            />
+                          ) : (
+                            employeeData.compensationChanges.regularized.leaves
+                          )} days
+                        </TableCell>
+                        <TableCell>
+                          <Chip 
+                            label={`${employeeData.compensationChanges.regularized.leaves} days`} 
+                            color="success" 
+                            size="small" 
+                          />
+                        </TableCell>
+                        <TableCell>All earned credits become available upon regularization</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Sick Leave</TableCell>
+                        <TableCell>{new Date(employeeData.startDate).toLocaleDateString()}</TableCell>
+                        <TableCell>5 days</TableCell>
+                        <TableCell>
+                          <Chip label="5 days" color="success" size="small" />
+                        </TableCell>
+                        <TableCell>Pro-rated based on probationary period</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Personal Leave</TableCell>
+                        <TableCell>{new Date(employeeData.startDate).toLocaleDateString()}</TableCell>
+                        <TableCell>3 days</TableCell>
+                        <TableCell>
+                          <Chip label="3 days" color="success" size="small" />
+                        </TableCell>
+                        <TableCell>Available for personal emergencies</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                
+                {/* Leave Summary */}
+                <Box sx={{ mt: 3, p: 3, backgroundColor: 'info.light', borderRadius: 2, color: 'white' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+                    📅 Leave Summary
+                  </Typography>
+                  <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                        {employeeData.compensationChanges.regularized.leaves + 5 + 3} days
+                      </Typography>
+                      <Typography variant="body2">Total Leave Credits</Typography>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                        {employeeData.compensationChanges.regularized.leaves - employeeData.compensationChanges.probationary.leaves} days
+                      </Typography>
+                      <Typography variant="body2">Additional Annual Leave</Typography>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                        {new Date(employeeData.compensationChanges.effectiveDate).toLocaleDateString()}
+                      </Typography>
+                      <Typography variant="body2">Available From</Typography>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Card>
-                      <CardContent>
-                        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>Regularized</Typography>
-                        <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
-                          {employeeData.compensationChanges.regularized.leaves} days
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Annual leave entitlement
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
+                </Box>
               </AccordionDetails>
             </Accordion>
           </Box>
