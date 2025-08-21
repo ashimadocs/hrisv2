@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -63,9 +64,21 @@ function TabPanel(props: TabPanelProps) {
 
 const EvaluationPipeline: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
+  const navigate = useNavigate();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  const handleEmployeeClick = (employeeId: number, employeeName: string) => {
+    // Navigate to employee profile page
+    navigate('/employee-profile', { 
+      state: { 
+        employeeId, 
+        employeeName,
+        fromEvaluation: true 
+      } 
+    });
   };
 
   // Performance Review Data
@@ -186,13 +199,30 @@ const EvaluationPipeline: React.FC = () => {
   };
 
   const renderEmployeeCard = (employee: Employee, stageType: string) => (
-    <Card key={employee.id} sx={{ mb: 2, cursor: 'pointer', '&:hover': { boxShadow: 3 } }}>
+    <Card 
+      key={employee.id} 
+      sx={{ 
+        mb: 2, 
+        cursor: 'pointer', 
+        '&:hover': { 
+          boxShadow: 3,
+          transform: 'translateY(-2px)',
+          transition: 'all 0.2s ease-in-out'
+        } 
+      }}
+      onClick={() => handleEmployeeClick(employee.id, employee.name)}
+    >
       <CardContent sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
           <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
             {employee.name.charAt(0)}
           </Avatar>
-          <IconButton size="small">
+          <IconButton 
+            size="small" 
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click when clicking the menu
+            }}
+          >
             <MoreVertIcon fontSize="small" />
           </IconButton>
         </Box>
@@ -257,6 +287,8 @@ const EvaluationPipeline: React.FC = () => {
             sx={{ mt: 1 }}
           />
         )}
+
+
       </CardContent>
     </Card>
   );

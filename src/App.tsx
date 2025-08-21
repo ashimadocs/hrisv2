@@ -20,6 +20,10 @@ import Compensation from './pages/Compensation';
 import Feedback from './pages/Feedback';
 import Reviews from './pages/Reviews';
 import Engagement from './pages/Engagement';
+// Employee Profile
+import EmployeeProfile from './pages/EmployeeProfile';
+// Review Detail
+import ReviewDetail from './pages/ReviewDetail';
 
 function App() {
   return (
@@ -45,6 +49,10 @@ function App() {
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/engagement" element={<Engagement />} />
+            {/* Employee Profile */}
+            <Route path="/employee-profile" element={<EmployeeProfile />} />
+            {/* Review Detail */}
+            <Route path="/review-detail/:reviewId" element={<ReviewDetail />} />
           </Routes>
         </Box>
       </Container>
